@@ -1,0 +1,10 @@
+mygit
+.mygit
+.vscode
+/testFolder
+test1Compress.cpp
+testDecompress.cpp
+compress
+compressed.bin
+decompress
+*.txt
