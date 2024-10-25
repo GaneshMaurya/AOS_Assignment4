@@ -59,7 +59,7 @@ bool isDirectory(string path)
     return false;
 }
 
-void dfs(string folderName, vector<string> &hashes)
+void search(string folderName, vector<string> &hashes)
 {
     DIR *directory = opendir(folderName.c_str());
     if (directory == NULL)
@@ -75,7 +75,7 @@ void dfs(string folderName, vector<string> &hashes)
         {
             if (isDirectory(path))
             {
-                closedir(directory);
+                search(path, hashes);
             }
             else
             {
@@ -93,7 +93,8 @@ void dfs(string folderName, vector<string> &hashes)
 string calculateFolderSHA1(const string &folderPath)
 {
     vector<string> hashes;
-    dfs(folderPath, hashes);
+    search(folderPath, hashes);
+    // cout << hashes.size() << "\n";
     sort(hashes.begin(), hashes.end());
 
     SHA_CTX sha1;
@@ -303,7 +304,7 @@ void decompressPrint(const char *file)
 
             if (!metadataComplete)
             {
-                for (int i = 0; i < bytesToWrite; ++i)
+                for (int i = 0; i < bytesToWrite; i++)
                 {
                     if (outputBuffer[i] == '$')
                     {
@@ -410,7 +411,7 @@ int decompressSize(const char *file)
 
             if (!metadataComplete)
             {
-                for (int i = 0; i < bytesToWrite; ++i)
+                for (int i = 0; i < bytesToWrite; i++)
                 {
                     if (outputBuffer[i] == '$')
                     {
@@ -499,7 +500,7 @@ string decompressType(const char *file)
 
             if (!metadataComplete)
             {
-                for (int i = 0; i < bytesToWrite; ++i)
+                for (int i = 0; i < bytesToWrite; i++)
                 {
                     if (outputBuffer[i] == '$')
                     {
