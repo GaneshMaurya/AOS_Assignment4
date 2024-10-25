@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
     }
     else if (commands[0] == "add")
     {
+        handleAdd(commands);
     }
     else if (commands[0] == "commit")
     {

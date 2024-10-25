@@ -49,29 +49,14 @@ void handleHash(vector<string> commands)
                 return;
             }
 
-            vector<char> buffer(BUFFER_SIZE);
-            ssize_t bytesRead = read(ufd, buffer.data(), buffer.size());
-            if (bytesRead == -1)
-            {
-                perror("read");
-                close(ufd);
-                return;
-            }
-
-            string temp = "blob " + to_string(bytesRead) + "$";
+            off_t fileSize = lseek(ufd, 0, SEEK_END);
             lseek(ufd, 0, SEEK_SET);
-            ssize_t bytesWritten = write(ufd, temp.c_str(), temp.size());
-            if (bytesWritten == -1)
-            {
-                close(ufd);
-                return;
-            }
 
-            write(ufd, buffer.data(), bytesRead);
+            string metadata = "blob " + to_string(fileSize) + "$";
 
             const char *inputFile = commands[2].c_str();
             const char *outputFile = binFilePath.c_str();
-            compress(inputFile, outputFile);
+            compress(inputFile, outputFile, metadata);
             close(ufd);
             close(fd);
         }
