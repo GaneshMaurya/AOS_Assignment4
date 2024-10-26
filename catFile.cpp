@@ -3,6 +3,8 @@ using namespace std;
 
 #include "header.h"
 
+const string OBJECTS_DIR = ".mygit/objects/";
+
 void handleCat(vector<string> commands)
 {
     // Check if the flag is present or not
@@ -13,7 +15,7 @@ void handleCat(vector<string> commands)
 
         string folderName = sha.substr(0, 2);
         string fileName = sha.substr(2, 38);
-        string filePath = ".mygit/objects/" + folderName + "/" + fileName;
+        string filePath = OBJECTS_DIR + folderName + "/" + fileName;
 
         if (flag == "-p")
         {

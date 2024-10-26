@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <dirent.h>
 using namespace std;
 
 #include "header.h"
@@ -23,20 +24,46 @@ void handleHash(vector<string> commands)
             string folderName = fileSha.substr(0, 2);
             string folderPath = ".mygit/objects/" + folderName;
             int ffd = createFolder(folderPath);
-            if (ffd < 0)
+            if (ffd < 0 && errno != EEXIST)
             {
                 cout << "Error in creating the folder.\n";
-                close(ffd);
                 return;
             }
 
             string fileName = fileSha.substr(2, 38);
             string binFilePath = folderPath + "/" + fileName;
+
+            // Check if file is already present
+            DIR *directory = opendir(folderPath.c_str());
+            if (directory == NULL)
+            {
+                close(ffd);
+                return;
+            }
+
+            struct dirent *dirInfo;
+            bool fileExists = false;
+            while ((dirInfo = readdir(directory)) != NULL)
+            {
+                if (dirInfo->d_name[0] != '.' && fileName == dirInfo->d_name)
+                {
+                    cout << "File already present.\n";
+                    fileExists = true;
+                    break;
+                }
+            }
+            closedir(directory);
+
+            if (fileExists)
+            {
+                close(ffd);
+                return;
+            }
+
             int fd = createFile(binFilePath);
             if (fd < 0)
             {
                 cout << "Error in creating the blob file.\n";
-                close(fd);
                 return;
             }
 
@@ -44,8 +71,8 @@ void handleHash(vector<string> commands)
             int ufd = open(path.c_str(), O_RDWR, S_IRUSR | S_IWUSR);
             if (ufd < 0)
             {
-                cout << "Error in creating the index file.\n";
-                close(ufd);
+                cout << "Error in opening the input file.\n";
+                close(fd);
                 return;
             }
 

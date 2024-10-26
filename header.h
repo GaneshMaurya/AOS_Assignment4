@@ -6,6 +6,8 @@ void handleCat(vector<string> commands);
 
 void handleWriteTree(vector<string> commands);
 
+void handleLsTree(vector<string> commands);
+
 void handleAdd(vector<string> commands);
 
 string calculateFileSHA1(const string &filePath);
@@ -24,4 +26,8 @@ int decompressSize(const char *file);
 
 string decompressType(const char *file);
 
+void decompressPrintNames(const char *file);
+
 bool isDirectory(string path);
+
+char *getCurrDir();

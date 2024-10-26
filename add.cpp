@@ -77,7 +77,16 @@ void handleAdd(vector<string> commands)
 
             textIndexFile += sha;
             textIndexFile += " ";
-            textIndexFile += fileNames[i];
+
+            string temp = fileNames[i];
+            char *curr = getCurrDir();
+            string currDir = curr;
+
+            int n = currDir.size();
+            int m = fileNames[i].size();
+            string name = fileNames[i].substr(n + 1, m - n);
+
+            textIndexFile += name;
             textIndexFile += "\n";
         }
 
@@ -118,7 +127,7 @@ void handleAdd(vector<string> commands)
 
             textIndexFile += sha;
             textIndexFile += " ";
-            textIndexFile += getCurrDir();
+            // textIndexFile += getCurrDir();
             textIndexFile += fileNames[i];
             textIndexFile += "\n";
         }

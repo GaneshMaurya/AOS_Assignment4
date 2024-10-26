@@ -7,6 +7,8 @@
 #include <dirent.h>
 using namespace std;
 
+#include "header.h"
+
 const int BUFFER_SIZE = 8 * 1024;
 
 string calculateFileSHA1(const string &filePath)
@@ -534,4 +536,109 @@ string decompressType(const char *file)
 
     string type = metadata.substr(0, 4);
     return type;
+}
+
+void decompressPrintNames(const char *file)
+{
+    int fd = open(file, O_RDWR, S_IRUSR | S_IWUSR);
+    if (fd < 0)
+    {
+        cout << "Error in creating the input file.\n";
+        close(fd);
+        return;
+    }
+
+    z_stream zs;
+    zs.zalloc = Z_NULL;
+    zs.zfree = Z_NULL;
+    zs.opaque = Z_NULL;
+
+    if (inflateInit(&zs) != Z_OK)
+    {
+        cout << "Error in initialization of decompression\n";
+        return;
+    }
+
+    char inputBuffer[BUFFER_SIZE];
+    char outputBuffer[BUFFER_SIZE];
+    string decompressedContent;
+
+    bool metadataComplete = false;
+    string metadata;
+    int bytesRead;
+    while ((bytesRead = read(fd, inputBuffer, sizeof(inputBuffer))) > 0)
+    {
+        zs.avail_in = static_cast<uInt>(bytesRead);
+        zs.next_in = reinterpret_cast<Bytef *>(inputBuffer);
+
+        do
+        {
+            zs.avail_out = sizeof(outputBuffer);
+            zs.next_out = reinterpret_cast<Bytef *>(outputBuffer);
+
+            int status = inflate(&zs, Z_NO_FLUSH);
+            if (status == Z_STREAM_ERROR || status == Z_DATA_ERROR || status == Z_MEM_ERROR)
+            {
+                cout << "Decompression error: " << status << "\n";
+                inflateEnd(&zs);
+                close(fd);
+                return;
+            }
+
+            int bytesToWrite = sizeof(outputBuffer) - zs.avail_out;
+
+            if (!metadataComplete)
+            {
+                for (int i = 0; i < bytesToWrite; i++)
+                {
+                    if (outputBuffer[i] == '$')
+                    {
+                        metadataComplete = true;
+                        metadata.append(outputBuffer, i + 1);
+                        if (i + 1 < bytesToWrite)
+                        {
+                            decompressedContent.append(outputBuffer + i + 1, bytesToWrite - (i + 1));
+                        }
+                        break;
+                    }
+                }
+
+                if (!metadataComplete)
+                {
+                    metadata.append(outputBuffer, bytesToWrite);
+                }
+            }
+            else
+            {
+                decompressedContent.append(outputBuffer, bytesToWrite);
+            }
+
+            if (status == Z_STREAM_END)
+            {
+                break;
+            }
+
+        } while (zs.avail_out == 0);
+    }
+
+    if (bytesRead < 0)
+    {
+        cout << "Error reading the compressed file.\n";
+    }
+
+    inflateEnd(&zs);
+    close(fd);
+
+    istringstream stream(decompressedContent);
+    string line;
+    while (getline(stream, line))
+    {
+        size_t lastSpace = line.find_last_of(" ");
+        if (lastSpace != string::npos)
+        {
+            cout << line.substr(lastSpace + 1) << "\n";
+        }
+    }
+
+    return;
 }
