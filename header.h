@@ -18,6 +18,8 @@ void handleAdd(vector<string> commands);
 
 void handleCommit(vector<string> commands);
 
+void handleLog(vector<string> commands);
+
 string calculateFileSHA1(const string &filePath);
 
 string calculateFolderSHA1(const string &folderPath);

@@ -152,7 +152,7 @@ int createFile(string path)
     int file = open(path.c_str(), O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
     if (file < 0)
     {
-        cout << "Error in creating the index file.\n";
+        // cout << "Error in creating the index file.\n";
         close(file);
         return -1;
     }
@@ -165,7 +165,7 @@ void compress(const char *input, const char *output, string metadata)
     int ipFile = open(input, O_RDWR, S_IRUSR | S_IWUSR);
     if (ipFile < 0)
     {
-        cout << "Error in creating the index file.\n";
+        // cout << "Error in creating the index file.\n";
         close(ipFile);
         return;
     }
@@ -173,7 +173,7 @@ void compress(const char *input, const char *output, string metadata)
     int opFile = open(output, O_RDWR, S_IRUSR | S_IWUSR);
     if (opFile < 0)
     {
-        cout << "Error in creating the index file.\n";
+        // cout << "Error in creating the index file.\n";
         close(opFile);
         return;
     }
@@ -276,7 +276,7 @@ void decompressPrint(const char *file)
     int fd = open(file, O_RDWR, S_IRUSR | S_IWUSR);
     if (fd < 0)
     {
-        cout << "Error in creating the input file.\n";
+        cout << "Error in opening the input file.\n";
         close(fd);
         return;
     }
@@ -461,8 +461,12 @@ int decompressSize(const char *file)
     inflateEnd(&zs);
     close(fd);
 
-    int n = metadata.size();
-    int totalSize = stoi(metadata.substr(5, n - 2));
+    metadata.pop_back();
+    stringstream ss(metadata);
+    string type, size;
+    ss >> type;
+    ss >> size;
+    int totalSize = stoi(size);
 
     return totalSize;
 }
@@ -550,7 +554,12 @@ string decompressType(const char *file)
     inflateEnd(&zs);
     close(fd);
 
-    string type = metadata.substr(0, 4);
+    metadata.pop_back();
+    stringstream ss(metadata);
+    string type, size;
+    ss >> type;
+    ss >> size;
+
     return type;
 }
 
