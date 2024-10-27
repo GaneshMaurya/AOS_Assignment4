@@ -10,9 +10,13 @@ void handleLsTree(vector<string> commands);
 
 void handleAdd(vector<string> commands);
 
+void handleCommit(vector<string> commands);
+
 string calculateFileSHA1(const string &filePath);
 
 string calculateFolderSHA1(const string &folderPath);
+
+string calculateStringSHA1(const string &input);
 
 int createFolder(string path);
 
@@ -29,5 +33,7 @@ string decompressType(const char *file);
 void decompressPrintNames(const char *file);
 
 bool isDirectory(string path);
+
+void dfs(string folderName, vector<string> &files);
 
 char *getCurrDir();

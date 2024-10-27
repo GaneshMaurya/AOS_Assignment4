@@ -6,7 +6,8 @@ using namespace std;
 
 #include "header.h"
 
-const int BUFFER_SIZE = 1024;
+const int BUFFER_SIZE = 8 * 1024;
+const string OBJECTS_DIR = ".mygit/objects/";
 
 void handleHash(vector<string> commands)
 {
@@ -22,7 +23,7 @@ void handleHash(vector<string> commands)
         {
             string fileSha = calculateFileSHA1(commands[2]);
             string folderName = fileSha.substr(0, 2);
-            string folderPath = ".mygit/objects/" + folderName;
+            string folderPath = OBJECTS_DIR + folderName;
             int ffd = createFolder(folderPath);
             if (ffd < 0 && errno != EEXIST)
             {

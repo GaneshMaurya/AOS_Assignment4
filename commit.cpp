@@ -6,49 +6,50 @@ using namespace std;
 
 #include "header.h"
 
-const int BUFFER_SIZE = 8 * 1024;
 const string INDEX_FILE_PATH = ".mygit/index.txt";
 const string OBJECTS_DIR = ".mygit/objects/";
 
-void handleWriteTree(vector<string> commands)
+void handleCommit(vector<string> commands)
 {
-    string currDirData = "";
-    string currPath = getCurrDir();
-    vector<string> fileNames;
-    dfs(currPath, fileNames);
-    for (int i = 0; i < fileNames.size(); i++)
+    string message;
+
+    if (commands.size() == 1)
     {
-        string sha;
-        if (isDirectory(fileNames[i]))
+        // Default message
+        message = "Commit";
+    }
+    else
+    {
+        string flag = commands[1];
+
+        if (flag != "-m")
         {
-            sha = calculateFolderSHA1(fileNames[i]);
-            currDirData += "040000 tree ";
+            cout << "Please enter correct flag.\n";
+            return;
         }
         else
         {
-            sha = calculateFileSHA1(fileNames[i]);
-            currDirData += "100644 blob ";
+            message = commands[2];
         }
-
-        currDirData += sha;
-        currDirData += " ";
-
-        string temp = fileNames[i];
-        char *curr = getCurrDir();
-        string currDir = curr;
-
-        int n = currDir.size();
-        int m = fileNames[i].size();
-        string name = fileNames[i].substr(n + 1, m - n);
-
-        currDirData += name;
-        currDirData += "\n";
     }
 
-    string fileSha = calculateStringSHA1(INDEX_FILE_PATH);
+    int ifd = open(INDEX_FILE_PATH.c_str(), O_RDWR, S_IRUSR | S_IWUSR);
+    if (ifd < 0)
+    {
+        cout << "Error in opening the index file.\n";
+        close(ifd);
+        return;
+    }
+
+    string fileSha = calculateFileSHA1(INDEX_FILE_PATH);
     string folderName = fileSha.substr(0, 2);
     string folderPath = OBJECTS_DIR + folderName;
     int ffd = createFolder(folderPath);
+    if (ffd < 0 && errno != EEXIST)
+    {
+        cout << "Error in creating the folder.\n";
+        return;
+    }
 
     string fileName = fileSha.substr(2, 38);
     string binFilePath = folderPath + "/" + fileName;
@@ -88,28 +89,17 @@ void handleWriteTree(vector<string> commands)
         return;
     }
 
-    string tempFile = OBJECTS_DIR + "/temp.txt";
-    int nfd = createFile(tempFile);
-    if (fd < 0)
-    {
-        cout << "Error in creating the temp file.\n";
-        return;
-    }
-    write(nfd, currDirData.c_str(), currDirData.size());
+    off_t fileSize = lseek(ifd, 0, SEEK_END);
+    lseek(ifd, 0, SEEK_SET);
 
-    string metadata = "tree " + to_string(currDirData.size()) + "$";
+    string metadata = "commit " + to_string(fileSize) + "$";
 
-    const char *inputFile = tempFile.c_str();
+    const char *inputFile = INDEX_FILE_PATH.c_str();
     const char *outputFile = binFilePath.c_str();
     compress(inputFile, outputFile, metadata);
+    close(ifd);
     close(ffd);
     close(fd);
-
-    if (unlink(tempFile.c_str()) != 0)
-    {
-        cout << "File deleted successfully.\n";
-        return;
-    }
 
     cout << fileSha << "\n";
 }

@@ -44,6 +44,24 @@ string calculateFileSHA1(const string &filePath)
     return ss.str();
 }
 
+string calculateStringSHA1(const string &input)
+{
+    unsigned char hash[SHA_DIGEST_LENGTH];
+    SHA_CTX shaContext;
+
+    SHA1_Init(&shaContext);
+    SHA1_Update(&shaContext, input.c_str(), input.size());
+    SHA1_Final(hash, &shaContext);
+
+    stringstream ss;
+    for (int i = 0; i < SHA_DIGEST_LENGTH; i++)
+    {
+        ss << hex << setw(2) << setfill('0') << static_cast<int>(hash[i]);
+    }
+
+    return ss.str();
+}
+
 bool isDirectory(string path)
 {
     struct stat dirStat;

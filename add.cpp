@@ -24,6 +24,7 @@ void dfs(string folderName, vector<string> &files)
         {
             if (isDirectory(path))
             {
+                files.push_back(path);
                 dfs(path, files);
             }
             else
@@ -127,7 +128,6 @@ void handleAdd(vector<string> commands)
 
             textIndexFile += sha;
             textIndexFile += " ";
-            // textIndexFile += getCurrDir();
             textIndexFile += fileNames[i];
             textIndexFile += "\n";
         }

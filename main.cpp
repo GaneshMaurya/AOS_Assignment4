@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
     }
     else if (commands[0] == "commit")
     {
+        handleCommit(commands);
     }
     else if (commands[0] == "log")
     {
