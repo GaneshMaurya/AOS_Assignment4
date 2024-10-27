@@ -5,9 +5,6 @@ using namespace std;
 
 #include "header.h"
 
-const int BUFFER_SIZE = 8 * 1024;
-const string INDEX_FILE_PATH = ".mygit/index.txt";
-
 void dfs(string folderName, vector<string> &files)
 {
     DIR *directory = opendir(folderName.c_str());

@@ -9,8 +9,6 @@ using namespace std;
 
 #include "header.h"
 
-const int BUFFER_SIZE = 8 * 1024;
-
 string calculateFileSHA1(const string &filePath)
 {
     unsigned char buffer[BUFFER_SIZE];

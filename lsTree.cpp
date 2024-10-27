@@ -6,9 +6,6 @@ using namespace std;
 
 #include "header.h"
 
-const string INDEX_FILE_PATH = ".mygit/index.txt";
-const string OBJECTS_DIR = ".mygit/objects/";
-
 void handleLsTree(vector<string> commands)
 {
 

@@ -1,3 +1,9 @@
+const int BUFFER_SIZE = 8 * 1024;
+const string INDEX_FILE_PATH = ".mygit/index";
+const string OBJECTS_DIR = ".mygit/objects/";
+const string MASTER_FILE = ".mygit/refs/heads/master";
+const string LOG_HEAD = ".mygit/logs/HEAD";
+
 void initializeGit(vector<string> commands);
 
 void handleHash(vector<string> commands);

@@ -6,10 +6,6 @@ using namespace std;
 
 #include "header.h"
 
-const int BUFFER_SIZE = 8 * 1024;
-const string INDEX_FILE_PATH = ".mygit/index.txt";
-const string OBJECTS_DIR = ".mygit/objects/";
-
 void handleWriteTree(vector<string> commands)
 {
     string currDirData = "";
@@ -45,12 +41,12 @@ void handleWriteTree(vector<string> commands)
         currDirData += "\n";
     }
 
-    string fileSha = calculateStringSHA1(INDEX_FILE_PATH);
-    string folderName = fileSha.substr(0, 2);
+    string stringSha = calculateStringSHA1(INDEX_FILE_PATH);
+    string folderName = stringSha.substr(0, 2);
     string folderPath = OBJECTS_DIR + folderName;
     int ffd = createFolder(folderPath);
 
-    string fileName = fileSha.substr(2, 38);
+    string fileName = stringSha.substr(2, 38);
     string binFilePath = folderPath + "/" + fileName;
 
     // Check if file is already present
@@ -67,7 +63,7 @@ void handleWriteTree(vector<string> commands)
     {
         if (dirInfo->d_name[0] != '.' && fileName == dirInfo->d_name)
         {
-            cout << fileSha << "\n";
+            cout << stringSha << "\n";
             // cout << "File already present.\n";
             fileExists = true;
             break;
@@ -107,9 +103,9 @@ void handleWriteTree(vector<string> commands)
 
     if (unlink(tempFile.c_str()) != 0)
     {
-        cout << "File deleted successfully.\n";
+        cout << "Error in deleting the temp.txt file.\n";
         return;
     }
 
-    cout << fileSha << "\n";
+    cout << stringSha << "\n";
 }

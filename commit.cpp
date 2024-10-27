@@ -2,21 +2,19 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <dirent.h>
+#include <chrono>
 using namespace std;
 
 #include "header.h"
 
-const string INDEX_FILE_PATH = ".mygit/index.txt";
-const string OBJECTS_DIR = ".mygit/objects/";
-
 void handleCommit(vector<string> commands)
 {
-    string message;
+    string commitMessage;
 
     if (commands.size() == 1)
     {
         // Default message
-        message = "Commit";
+        commitMessage = "Commit";
     }
     else
     {
@@ -29,7 +27,7 @@ void handleCommit(vector<string> commands)
         }
         else
         {
-            message = commands[2];
+            commitMessage = commands[2];
         }
     }
 
@@ -41,8 +39,8 @@ void handleCommit(vector<string> commands)
         return;
     }
 
-    string fileSha = calculateFileSHA1(INDEX_FILE_PATH);
-    string folderName = fileSha.substr(0, 2);
+    string commitSha = calculateFileSHA1(INDEX_FILE_PATH);
+    string folderName = commitSha.substr(0, 2);
     string folderPath = OBJECTS_DIR + folderName;
     int ffd = createFolder(folderPath);
     if (ffd < 0 && errno != EEXIST)
@@ -51,7 +49,7 @@ void handleCommit(vector<string> commands)
         return;
     }
 
-    string fileName = fileSha.substr(2, 38);
+    string fileName = commitSha.substr(2, 38);
     string binFilePath = folderPath + "/" + fileName;
 
     // Check if file is already present
@@ -68,8 +66,7 @@ void handleCommit(vector<string> commands)
     {
         if (dirInfo->d_name[0] != '.' && fileName == dirInfo->d_name)
         {
-            cout << fileSha << "\n";
-            // cout << "File already present.\n";
+            cout << commitSha << "\n";
             fileExists = true;
             break;
         }
@@ -97,9 +94,53 @@ void handleCommit(vector<string> commands)
     const char *inputFile = INDEX_FILE_PATH.c_str();
     const char *outputFile = binFilePath.c_str();
     compress(inputFile, outputFile, metadata);
-    close(ifd);
     close(ffd);
     close(fd);
 
-    cout << fileSha << "\n";
+    cout << commitSha << "\n";
+
+    // Store commit details in refs
+    int mfd = open(MASTER_FILE.c_str(), O_TRUNC | O_RDWR);
+    if (mfd < 0)
+    {
+        cout << "Error in opening the file.\n";
+        return;
+    }
+
+    string parentCommitSha = "0000000000000000000000000000000000000000";
+    char *parent = new char[BUFFER_SIZE];
+    int bytesRead = read(mfd, parent, BUFFER_SIZE);
+    if (bytesRead > 0)
+    {
+        parentCommitSha = parent;
+    }
+
+    write(mfd, commitSha.c_str(), commitSha.size());
+
+    // Store commit details in log files
+    int hfd = open(LOG_HEAD.c_str(), O_APPEND | O_RDWR);
+    if (hfd < 0)
+    {
+        cout << "Error in opening the file.\n";
+        return;
+    }
+
+    string headData = parentCommitSha;
+    headData += " ";
+    headData += commitSha;
+    headData += " Ganesh Maurya <gvgmaurya@gmail.com> ";
+
+    auto now = chrono::system_clock::now();
+    time_t timestamp = chrono::system_clock::to_time_t(now);
+    headData += to_string(timestamp);
+
+    headData += " +0530	commit: ";
+    headData += commitMessage;
+    write(hfd, headData.c_str(), headData.size());
+
+    const char *blank = "";
+    write(ifd, blank, 0);
+
+    close(mfd);
+    close(ifd);
 }

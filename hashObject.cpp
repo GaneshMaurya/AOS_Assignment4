@@ -6,9 +6,6 @@ using namespace std;
 
 #include "header.h"
 
-const int BUFFER_SIZE = 8 * 1024;
-const string OBJECTS_DIR = ".mygit/objects/";
-
 void handleHash(vector<string> commands)
 {
     // Check if the flag is present or not
@@ -87,6 +84,11 @@ void handleHash(vector<string> commands)
             compress(inputFile, outputFile, metadata);
             close(ufd);
             close(fd);
+        }
+        else
+        {
+            cout << "Wrong flag entered.\n";
+            return;
         }
     }
     else

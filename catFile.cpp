@@ -3,8 +3,6 @@ using namespace std;
 
 #include "header.h"
 
-const string OBJECTS_DIR = ".mygit/objects/";
-
 void handleCat(vector<string> commands)
 {
     // Check if the flag is present or not

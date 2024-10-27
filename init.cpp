@@ -11,7 +11,7 @@ void initializeGit(vector<string> commands)
     int gitDir = createFolder(path);
 
     // Create index file to store details about files that are added and to be committed
-    string indexPath = path + "/index.txt";
+    string indexPath = path + "/index";
     int indexFile = createFile(indexPath);
     if (indexFile < 0)
     {
@@ -25,7 +25,7 @@ void initializeGit(vector<string> commands)
     int objectsDir = createFolder(objectsFolder);
 
     // HEAD File
-    string headPath = path + "/HEAD.txt";
+    string headPath = path + "/HEAD";
     int headFile = createFile(headPath);
     if (headFile < 0)
     {
@@ -34,7 +34,7 @@ void initializeGit(vector<string> commands)
         return;
     }
 
-    // Refs folder (To store the commit history and other related data)
+    // Refs folder
     string refsFolder = path + "/refs";
     int refsDir = createFolder(refsFolder);
 
@@ -42,7 +42,14 @@ void initializeGit(vector<string> commands)
     int headsDir = createFolder(headsFolder);
 
     string commitFolder = headsFolder + "/master";
-    int commitDir = createFolder(commitFolder);
+    int commitDir = createFile(commitFolder);
+
+    // Log folder
+    string logFolder = path + "/logs";
+    int logsDir = createFolder(logFolder);
+
+    string headfile = logFolder + "/HEAD";
+    int hfd = createFile(headfile);
 
     // Initialize HEAD file
     string buffer = "ref: refs/heads/master";
