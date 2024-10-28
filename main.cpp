@@ -45,6 +45,7 @@ int main(int argc, char *argv[])
     }
     else if (commands[0] == "checkout")
     {
+        handleCheckout(commands);
     }
     else
     {

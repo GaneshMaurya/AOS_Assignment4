@@ -20,6 +20,8 @@ void handleCommit(vector<string> commands);
 
 void handleLog(vector<string> commands);
 
+void handleCheckout(vector<string> commands);
+
 string calculateFileSHA1(const string &filePath);
 
 string calculateFolderSHA1(const string &folderPath);
