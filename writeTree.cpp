@@ -18,12 +18,14 @@ void handleWriteTree(vector<string> commands)
         if (isDirectory(fileNames[i]))
         {
             sha = calculateFolderSHA1(fileNames[i]);
-            currDirData += "040000 tree ";
+            currDirData += getPermission(fileNames[i]);
+            currDirData += " tree ";
         }
         else
         {
             sha = calculateFileSHA1(fileNames[i]);
-            currDirData += "100644 blob ";
+            currDirData += getPermission(fileNames[i]);
+            currDirData += " blob ";
         }
 
         currDirData += sha;

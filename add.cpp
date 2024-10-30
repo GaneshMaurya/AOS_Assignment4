@@ -155,12 +155,14 @@ void handleAdd(vector<string> commands)
             if (isDirectory(fileNames[i]))
             {
                 sha = calculateFolderSHA1(fileNames[i]);
-                textIndexFile += "040000 tree ";
+                textIndexFile += getPermission(fileNames[i]);
+                textIndexFile += " tree ";
             }
             else
             {
                 sha = calculateFileSHA1(fileNames[i]);
-                textIndexFile += "100644 blob ";
+                textIndexFile += getPermission(fileNames[i]);
+                textIndexFile += " blob ";
             }
 
             fileShas.push_back(sha);
@@ -206,12 +208,14 @@ void handleAdd(vector<string> commands)
             if (isDirectory(fileNames[i]))
             {
                 sha = calculateFolderSHA1(fileNames[i]);
-                textIndexFile += "040000 tree ";
+                textIndexFile += getPermission(fileNames[i]);
+                textIndexFile += " tree ";
             }
             else
             {
                 sha = calculateFileSHA1(fileNames[i]);
-                textIndexFile += "100644 blob ";
+                textIndexFile += getPermission(fileNames[i]);
+                textIndexFile += " blob ";
             }
 
             fileShas.push_back(sha);

@@ -51,3 +51,5 @@ bool isDirectory(string path);
 void dfs(string folderName, vector<string> &files);
 
 char *getCurrDir();
+
+string getPermission(string path);

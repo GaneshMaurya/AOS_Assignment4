@@ -9,6 +9,48 @@ using namespace std;
 
 #include "header.h"
 
+string getPermission(string path)
+{
+    struct stat fileStat;
+    string p = "";
+
+    if (stat(path.c_str(), &fileStat) < 0)
+    {
+        return "";
+    }
+
+    if (S_ISREG(fileStat.st_mode))
+    {
+        p += "10";
+    }
+    if (S_ISDIR(fileStat.st_mode))
+    {
+        p += "04";
+    }
+
+    p += "0";
+
+    int p1 = 0;
+    p1 += ((fileStat.st_mode & S_IRUSR) ? 4 : 0);
+    p1 += ((fileStat.st_mode & S_IWUSR) ? 2 : 0);
+    p1 += ((fileStat.st_mode & S_IXUSR) ? 1 : 0);
+    p += to_string(p1);
+
+    int p2 = 0;
+    p2 += ((fileStat.st_mode & S_IRGRP) ? 4 : 0);
+    p2 += ((fileStat.st_mode & S_IWGRP) ? 2 : 0);
+    p2 += ((fileStat.st_mode & S_IXGRP) ? 1 : 0);
+    p += to_string(p2);
+
+    int p3 = 0;
+    p3 += ((fileStat.st_mode & S_IROTH) ? 4 : 0);
+    p3 += ((fileStat.st_mode & S_IWOTH) ? 2 : 0);
+    p3 += ((fileStat.st_mode & S_IXOTH) ? 1 : 0);
+    p += to_string(p3);
+
+    return p;
+}
+
 string calculateFileSHA1(const string &filePath)
 {
     unsigned char buffer[BUFFER_SIZE];
