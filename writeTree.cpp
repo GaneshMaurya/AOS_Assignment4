@@ -86,7 +86,7 @@ void handleWriteTree(vector<string> commands)
 
     string tempFile = OBJECTS_DIR + "/temp.txt";
     int nfd = createFile(tempFile);
-    if (fd < 0)
+    if (nfd < 0)
     {
         cout << "Error in creating the temp file.\n";
         return;

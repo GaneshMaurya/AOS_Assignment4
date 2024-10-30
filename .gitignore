@@ -8,3 +8,5 @@ compress
 compressed.bin
 decompress
 *.txt
+/src
+/test_tree

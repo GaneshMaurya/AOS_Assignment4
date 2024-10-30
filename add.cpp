@@ -14,8 +14,8 @@ void dfs(string folderName, vector<string> &files)
         return;
     }
 
-    struct dirent *dirInfo = readdir(directory);
-    while (dirInfo != NULL)
+    struct dirent *dirInfo;
+    while ((dirInfo = readdir(directory)) != NULL)
     {
         string path = folderName + "/" + dirInfo->d_name;
         if (dirInfo->d_name[0] != '.')
@@ -30,11 +30,8 @@ void dfs(string folderName, vector<string> &files)
                 files.push_back(path);
             }
         }
-
-        dirInfo = readdir(directory);
     }
     closedir(directory);
-    return;
 }
 
 char *getCurrDir()
@@ -68,7 +65,7 @@ void createObjects(string path)
     }
     close(indexFd);
 
-    if (fileContent == "")
+    if (fileContent.empty())
     {
         return;
     }
@@ -120,24 +117,24 @@ void createObjects(string path)
             continue;
         }
 
-        int inputFd = open(filePath.c_str(), O_RDONLY);
-        if (inputFd < 0)
+        int iFd = open(filePath.c_str(), O_RDONLY);
+        if (iFd < 0)
         {
             cout << "Error opening source file: " << filePath << "\n";
             close(fd);
             continue;
         }
 
-        off_t fileSize = lseek(inputFd, 0, SEEK_END);
-        lseek(inputFd, 0, SEEK_SET);
+        off_t fileSize = lseek(iFd, 0, SEEK_END);
+        lseek(iFd, 0, SEEK_SET);
 
-        string metadata = "blob " + to_string(fileSize) + "\0";
+        string metadata = "blob " + to_string(fileSize) + "$";
 
         const char *inputFile = filePath.c_str();
         const char *outputFile = binFilePath.c_str();
         compress(inputFile, outputFile, metadata);
 
-        close(inputFd);
+        close(iFd);
         close(fd);
     }
 }
@@ -159,7 +156,6 @@ void handleAdd(vector<string> commands)
             {
                 sha = calculateFolderSHA1(fileNames[i]);
                 textIndexFile += "040000 tree ";
-                // continue;
             }
             else
             {
@@ -201,6 +197,7 @@ void handleAdd(vector<string> commands)
         {
             fileNames.push_back(commands[i]);
         }
+
         vector<string> fileShas;
         string textIndexFile = "";
         for (int i = 0; i < fileNames.size(); i++)
@@ -210,7 +207,6 @@ void handleAdd(vector<string> commands)
             {
                 sha = calculateFolderSHA1(fileNames[i]);
                 textIndexFile += "040000 tree ";
-                // continue;
             }
             else
             {
@@ -249,12 +245,7 @@ void handleAdd(vector<string> commands)
     int size = lseek(ifd, 0, SEEK_END);
     lseek(ifd, 0, SEEK_SET);
 
-    if (size == 0)
-    {
-        // cout << "Nothing to add.\n";
-        return;
-    }
-    else
+    if (size != 0)
     {
         createObjects(INDEX_FILE_PATH);
     }

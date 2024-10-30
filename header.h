@@ -3,6 +3,7 @@ const string INDEX_FILE_PATH = ".mygit/index";
 const string OBJECTS_DIR = ".mygit/objects/";
 const string MASTER_FILE = ".mygit/refs/heads/master";
 const string LOG_HEAD = ".mygit/logs/HEAD";
+const string SRC_FOLDER = "src";
 
 void initializeGit(vector<string> commands);
 
@@ -41,6 +42,9 @@ int decompressSize(const char *file);
 string decompressType(const char *file);
 
 void decompressPrintNames(const char *file);
+
+// void decompressToFile(const char *file);
+void decompressToFile(const char *file, int outputFd);
 
 bool isDirectory(string path);
 

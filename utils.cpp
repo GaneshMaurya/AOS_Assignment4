@@ -162,7 +162,7 @@ int createFile(string path)
 
 void compress(const char *input, const char *output, string metadata)
 {
-    int ipFile = open(input, O_RDWR, S_IRUSR | S_IWUSR);
+    int ipFile = open(input, O_RDONLY);
     if (ipFile < 0)
     {
         // cout << "Error in creating the index file.\n";
@@ -170,7 +170,7 @@ void compress(const char *input, const char *output, string metadata)
         return;
     }
 
-    int opFile = open(output, O_RDWR, S_IRUSR | S_IWUSR);
+    int opFile = open(output, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
     if (opFile < 0)
     {
         // cout << "Error in creating the index file.\n";
@@ -273,11 +273,10 @@ void compress(const char *input, const char *output, string metadata)
 
 void decompressPrint(const char *file)
 {
-    int fd = open(file, O_RDWR, S_IRUSR | S_IWUSR);
+    int fd = open(file, O_RDONLY);
     if (fd < 0)
     {
         cout << "Error in opening the input file.\n";
-        close(fd);
         return;
     }
 
@@ -289,6 +288,7 @@ void decompressPrint(const char *file)
     if (inflateInit(&zs) != Z_OK)
     {
         cout << "Error in initialization of decompression\n";
+        close(fd);
         return;
     }
 
@@ -380,7 +380,7 @@ void decompressPrint(const char *file)
 
 int decompressSize(const char *file)
 {
-    int fd = open(file, O_RDWR, S_IRUSR | S_IWUSR);
+    int fd = open(file, O_RDONLY);
     if (fd < 0)
     {
         cout << "Error in creating the input file.\n";
@@ -396,6 +396,7 @@ int decompressSize(const char *file)
     if (inflateInit(&zs) != Z_OK)
     {
         cout << "Error in initialization of decompression\n";
+        close(fd);
         return 0;
     }
 
@@ -473,7 +474,7 @@ int decompressSize(const char *file)
 
 string decompressType(const char *file)
 {
-    int fd = open(file, O_RDWR, S_IRUSR | S_IWUSR);
+    int fd = open(file, O_RDONLY);
     if (fd < 0)
     {
         cout << "Error in creating the input file.\n";
@@ -489,6 +490,7 @@ string decompressType(const char *file)
     if (inflateInit(&zs) != Z_OK)
     {
         cout << "Error in initialization of decompression\n";
+        close(fd);
         return "";
     }
 
@@ -565,7 +567,7 @@ string decompressType(const char *file)
 
 void decompressPrintNames(const char *file)
 {
-    int fd = open(file, O_RDWR, S_IRUSR | S_IWUSR);
+    int fd = open(file, O_RDONLY);
     if (fd < 0)
     {
         cout << "Error in creating the input file.\n";
@@ -581,6 +583,7 @@ void decompressPrintNames(const char *file)
     if (inflateInit(&zs) != Z_OK)
     {
         cout << "Error in initialization of decompression\n";
+        close(fd);
         return;
     }
 
@@ -664,6 +667,115 @@ void decompressPrintNames(const char *file)
             cout << line.substr(lastSpace + 1) << "\n";
         }
     }
+
+    return;
+}
+
+void decompressToFile(const char *file, int outputFd)
+{
+    int fd = open(file, O_RDONLY);
+    if (fd < 0)
+    {
+        cout << "Error opening the " << file << ".\n";
+        return;
+    }
+
+    z_stream zs;
+    zs.zalloc = Z_NULL;
+    zs.zfree = Z_NULL;
+    zs.opaque = Z_NULL;
+
+    if (inflateInit(&zs) != Z_OK)
+    {
+        cout << "Error in decompression initialization.\n";
+        close(fd);
+        return;
+    }
+
+    char inputBuffer[BUFFER_SIZE];
+    char outputBuffer[BUFFER_SIZE];
+    bool metadataComplete = false;
+    string metadata;
+    int bytesRead;
+
+    while ((bytesRead = read(fd, inputBuffer, sizeof(inputBuffer))) > 0)
+    {
+        zs.avail_in = static_cast<uInt>(bytesRead);
+        zs.next_in = reinterpret_cast<Bytef *>(inputBuffer);
+
+        do
+        {
+            zs.avail_out = sizeof(outputBuffer);
+            zs.next_out = reinterpret_cast<Bytef *>(outputBuffer);
+
+            int status = inflate(&zs, Z_NO_FLUSH);
+            if (status == Z_STREAM_ERROR || status == Z_DATA_ERROR || status == Z_MEM_ERROR)
+            {
+                cout << "Decompression error: " << status << "\n";
+                inflateEnd(&zs);
+                close(fd);
+                return;
+            }
+
+            int bytesToWrite = sizeof(outputBuffer) - zs.avail_out;
+
+            if (!metadataComplete)
+            {
+                for (int i = 0; i < bytesToWrite; i++)
+                {
+                    if (outputBuffer[i] == '$')
+                    {
+                        metadataComplete = true;
+                        metadata.append(outputBuffer, i + 1);
+
+                        if (i + 1 < bytesToWrite)
+                        {
+                            if (write(outputFd, &outputBuffer[i + 1], bytesToWrite - (i + 1)) != (bytesToWrite - (i + 1)))
+                            {
+                                cout << "Failed to write to output file\n";
+                                inflateEnd(&zs);
+                                close(fd);
+                                return;
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                if (!metadataComplete)
+                {
+                    metadata.append(outputBuffer, bytesToWrite);
+                }
+            }
+            else
+            {
+                if (bytesToWrite > 0)
+                {
+                    if (write(outputFd, outputBuffer, bytesToWrite) != bytesToWrite)
+                    {
+                        cout << "Failed to write to output file\n";
+                        inflateEnd(&zs);
+                        close(fd);
+                        return;
+                    }
+                }
+            }
+
+            if (status == Z_STREAM_END)
+            {
+                break;
+            }
+
+        } while (zs.avail_out == 0);
+    }
+
+    if (bytesRead < 0)
+    {
+        cout << "Error reading the compressed file.\n";
+    }
+
+    inflateEnd(&zs);
+    close(fd);
 
     return;
 }
